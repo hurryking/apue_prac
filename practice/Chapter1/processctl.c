@@ -27,7 +27,7 @@ main(int argc, char const *argv[])
 		if ((pid = fork()) < 0) {
 			err_sys("fork error");
 		//子进程
-		} else if (pid == 0) { 
+		} else if (pid == 0) {
 			execlp(buf, buf, (char *)0);
 			err_ret("couldn't execute: %s", buf);
 		}
