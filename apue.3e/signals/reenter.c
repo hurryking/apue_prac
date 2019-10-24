@@ -20,9 +20,9 @@ main(void)
 	signal(SIGALRM, my_alarm);
 	alarm(1);
 	for ( ; ; ) {
-		if ((ptr = getpwnam("sar")) == NULL)
+		if ((ptr = getpwnam("ningjin")) == NULL)
 			err_sys("getpwnam error");
-		if (strcmp(ptr->pw_name, "sar") != 0)
+		if (strcmp(ptr->pw_name, "ningjin") != 0)
 			printf("return value corrupted!, pw_name = %s\n",
 					ptr->pw_name);
 	}
