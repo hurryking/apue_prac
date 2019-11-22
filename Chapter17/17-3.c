@@ -30,10 +30,14 @@ helper(void *arg)
 	for (;;)
 	{
 		memset(&m, 0, sizeof(m));
+
 		if ((n = msgrcv(tip->qid, &m, MAXMSZ, 0, MSG_NOERROR)) < 0)
+		{
 			err_sys("msgrcv error");
+		}
 		if (write(tip->fd, m.mtext, n) < 0)
 			err_sys("write error");
+		printf("received message\n");
 	}
 }
 
@@ -48,6 +52,7 @@ main()
 	pthread_t tid[NQ];
 	char buf[MAXMSZ];
 
+	/*初始化消息队列*/
 	for (i = 0; i < NQ; i++)
 	{
 		if ((qid[i] = msgget((KEY+i), IPC_CREAT|0666)) < 0)
@@ -64,25 +69,24 @@ main()
 		ti[i].fd = fd[1];
 		if ((err = pthread_create(&tid[i], NULL, helper, &ti[i])) != 0)
 			err_exit(err, "pthread_creare error");
+	}
 
-		for (;;)
+	for (;;)
+	{
+		if (poll(pfd, NQ, -1) < 0)
+			err_sys("poll error");
+
+		for (i = 0; i < NQ; i++)
 		{
-			if (poll(pfd, NQ, -1) < 0)
-				err_sys("poll error");
-
-			for (i = 0; i < NQ; i++)
+			if (pfd[i].revents & POLLIN)
 			{
-				if (pfd[i].revents & POLLIN)
-				{
-					if ((n = read(pfd[i].fd, buf, sizeof(buf))) < 0)
-						err_sys("read error");
+				if ((n = read(pfd[i].fd, buf, sizeof(buf))) < 0)
+					err_sys("read error");
 
-					buf[n] = 0;
-					printf("queue id %d, message %s\n", qid[i], buf);
-				}
+				buf[n] = 0;
+				printf("queue id %d, message %s\n", qid[i], buf);
 			}
 		}
-
 	}
 
 	exit(0);
